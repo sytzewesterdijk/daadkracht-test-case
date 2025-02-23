@@ -23,7 +23,7 @@ class InquiryResource extends Resource
     {
         return $form
             ->schema([
-                
+
             ]);
 
 
