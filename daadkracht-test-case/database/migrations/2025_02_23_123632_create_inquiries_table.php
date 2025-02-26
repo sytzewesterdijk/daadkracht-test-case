@@ -18,12 +18,12 @@ return new class extends Migration
             $table->string('email');
             $table->string('phone');
             $table->string('description');
-            $table->foreignId('category_id')->constrained('categories');
+            $table->foreignId('category_id')->nullable()->constrained('categories');
             $table->integer('status')->default(0);
             $table->string('addressLine1');
-            $table->string('addressLine2');
+            $table->string('addressLine2')->nullable();
             $table->string('city');
-            $table->string('state');
+            $table->string('state')->nullable();
             $table->string('zip');
             $table->string('country');
             $table->timestamps();

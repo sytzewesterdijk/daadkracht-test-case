@@ -9,10 +9,15 @@ use App\Filament\Resources\InquiryResource\RelationManagers;
 use App\Models\Category;
 use App\Models\Inquiry;
 use Filament\Forms;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -26,48 +31,54 @@ class InquiryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('first_name')
+                TextInput::make('description')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('last_name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->required()
-                    ->rule('email')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
-                    ->required()
-                    ->numeric()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('description')
-                    ->maxLength(255),
-                Forms\Components\Select::make('category')
+                Fieldset::make('Customer Information')
+                    ->schema([
+                        TextInput::make('first_name')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('last_name')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('email')
+                            ->required()
+                            ->email()
+                            ->maxLength(255),
+                        TextInput::make('phone')
+                            ->required()
+                            ->tel()
+                            ->maxLength(255),
+                    ]),
+                Fieldset::make('Address Information')
+                    ->schema([
+                        TextInput::make('addressLine1')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('addressLine2')
+                            ->maxLength(255),
+                        TextInput::make('city')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('state')
+                            ->maxLength(255),
+                        TextInput::make('zip')
+                            ->required()
+                            ->maxLength(255),
+                        Select::make('country')
+                            ->options(Country::class)
+                            ->searchable()
+                            ->required(),
+                    ]),
+                Select::make('category_id')
                     ->name('Category')
-                    ->options([Category::all()->pluck('name', 'id')])
-                    ->searchable()
-                    ->required(),
-                Forms\Components\Select::make('status')
+                    ->options(Category::all()->pluck('name', 'id'))
+                    ->searchable(),
+                Select::make('status')
                     ->name('Status')
                     ->options(Status::class)
                     ->default(Status::Pending)
-                    ->required(),
-                Forms\Components\TextInput::make('addressLine1')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('addressLine2')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('city')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('state')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('zip')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('country')
-                    ->options(Country::class)
-                    ->searchable()
                     ->required(),
             ]);
     }
@@ -76,7 +87,16 @@ class InquiryResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('first_name')
+                    ->searchable(),
+                TextColumn::make('last_name'),
+                TextColumn::make('email')
+                    ->sortable(),
+                TextColumn::make('phone')
+                    ->searchable(),
+                TextColumn::make('status')
+                    ->getStateUsing(fn($record) => Status::getLabel($record->status))
+                    ->color(fn ($record) => Status::getColor($record->status))
             ])
             ->filters([
                 //
@@ -94,7 +114,7 @@ class InquiryResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\CategoryRelationManager::class,
         ];
     }
 
